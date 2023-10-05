@@ -60,7 +60,7 @@ int generarFrecuenciaCardiaca(int edad){
 		return generarValorSensor(70,80);
 	}
 	else if(edad >= 16){ //Adulto
-		return generarValorSensor(50,90); //Se aumenta el rango para que genere alertas
+		return generarValorSensor(57,83); //Se aumenta el rango para que genere alertas
 	}
 }
 
@@ -88,8 +88,8 @@ void generarTensionArterial(int edad, int * vecTensiones){
 		vecTensiones[1] = generarValorSensor(70,82);
 	}
 	else if(edad >= 16){ //Adulto
-		vecTensiones[0] = generarValorSensor(100,150); //Se aumenta el rango para que genere alertas
-		vecTensiones[1] = generarValorSensor(60,100); //Se aumenta el rango para que genere alertas
+		vecTensiones[0] = generarValorSensor(107,143); //Se aumenta el rango para que genere alertas
+		vecTensiones[1] = generarValorSensor(67,93); //Se aumenta el rango para que genere alertas
 	}
 }
 
@@ -120,7 +120,7 @@ int generarTemperatura(int edad){
 		return 37.0;
 	}
 	else if(edad >= 16){ //Adulto
-		return generarValorTemperatura(35.2,40.2); //Se aumenta el rango para que genere alertas
+		return generarValorTemperatura(35.2,39.2); //Se aumenta el rango para que genere alertas
 	}
 }
 

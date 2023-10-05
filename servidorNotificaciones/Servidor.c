@@ -10,7 +10,7 @@
 void imprimirInfoPaciente(paciente_SA_SN paciente){
 	printf("No de habitacion: %d\n", paciente.numeroHabitacion);
 	printf("Nombres y apellidos: %s %s\n",paciente.nombre,paciente.apellido);
-	printf("Edad: %d", paciente.edad);
+	printf("Edad: %d\n", paciente.edad);
 }
 
 void imprimirInfoAlerta(notificacion * notificacion){
@@ -19,51 +19,49 @@ void imprimirInfoAlerta(notificacion * notificacion){
 }
 
 void imprimirIndicadoresAlerta(notificacion * notificacion){
-	printf("[ \tNombre indicador\t ] \t[ \tValor\t ]");
-	if(notificacion->objIndicadores.frecuencia_cardiaca != 1){
+	printf("[ \tNombre indicador\t ] \t[ \tValor\t ]\n");
+	if(notificacion->objIndicadores.frecuencia_cardiaca != -1){
 		printf("[ \tFrecuencia cardiaca\t ] \t[ \t%d\t ]\n", notificacion->objIndicadores.frecuencia_cardiaca );
 	}
-	if(notificacion->objIndicadores.tension_arterial[0] != 1 && notificacion->objIndicadores.tension_arterial[1] != 1 ){
+	if(notificacion->objIndicadores.tension_arterial[0] != -1 && notificacion->objIndicadores.tension_arterial[1] != 1 ){
 		printf("[ \tTension arterial\t ] \t[ \t%d/%d\t ]\n", notificacion->objIndicadores.tension_arterial[0], notificacion->objIndicadores.tension_arterial[1]);
 	}
-	if(notificacion->objIndicadores.frecuencia_respiratoria != 1){
+	if(notificacion->objIndicadores.frecuencia_respiratoria != -1){
 		printf("[ \tFrecuencia respiratoria\t ] \t[ \t%d\t ]\n", notificacion->objIndicadores.frecuencia_respiratoria);
 	}
-	if(notificacion->objIndicadores.saturacion_oxigeno != 1){
+	if(notificacion->objIndicadores.saturacion_oxigeno != -1){
 		printf("[ \tSaturacion oxigeno\t ] \t[ \t%d\t ]\n", notificacion->objIndicadores.saturacion_oxigeno);
 	}
-	if(notificacion->objIndicadores.temperatura != 1){
-		printf("[ \tTemperatura\t ] \t[ \t%f\t ]\n", notificacion->objIndicadores.temperatura);
+	if(notificacion->objIndicadores.temperatura != -1){
+		printf("[ \tTemperatura\t         ] \t[ \t%.1f\t ]\n", notificacion->objIndicadores.temperatura);
 	}
 }
 
 void imprimirUltimasAlertas(notificacion * notificacion) {
-	printf("[ \tFecha alerta\t ] \t[ \tHora alerta\t ] \t[ \tPuntuacion\t ]");
+	printf("\n[ Fecha alerta ] \t[ Hora alerta ] \t[ Puntuacion ]");
 	for(int i=0; i<5; i++){
 		if(notificacion->vecUltimasAlertas[i].puntuacion != -1){
-			printf("[ \t%s\t ] \t[ \t%s\t ] \t[ \t%d\t ]", notificacion->vecUltimasAlertas[i].fechaAlerta, notificacion->vecUltimasAlertas[i].horaAlerta, notificacion->vecUltimasAlertas[i].puntuacion);
+			printf("[ %s ] \t[ %s ] \t[ %d ]\n", notificacion->vecUltimasAlertas[i].fechaAlerta, notificacion->vecUltimasAlertas[i].horaAlerta, notificacion->vecUltimasAlertas[i].puntuacion);
 		}
 	}
+	printf("\n");
 }
 
 bool_t *
 enviarnotificacion_2_svc(notificacion *argp, struct svc_req *rqstp)
 {
 	static bool_t  result;
-	char * mensajeNotificacion;
-
-	if((*argp).puntuacion == 2){
-		sprintf(mensajeNotificacion, "Por favor alguna enfermera que esté disponible digirse a la habitacion No. %d\n", (*argp).objPaciente.numeroHabitacion);
-	}
-	else if((*argp).puntuacion >= 3){
-		sprintf(mensajeNotificacion, "Por favor alguna enfermera y médico que esten disponibles digirse a la habitacion No. %d con urgencia\n", (*argp).objPaciente.numeroHabitacion);
-	}
 
 	printf("\t\t\t Alerta generada\n");
 	imprimirInfoPaciente((*argp).objPaciente);
 	imprimirInfoAlerta(argp);
 	imprimirIndicadoresAlerta(argp);
-	printf("%s\n",mensajeNotificacion);
+	if((*argp).puntuacion == 2){
+		printf("Por favor alguna enfermera que esté disponible digirse a la habitacion No. %d\n", (*argp).objPaciente.numeroHabitacion);
+	}
+	else if((*argp).puntuacion >= 3){
+		printf("Por favor alguna enfermera y médico que esten disponibles digirse a la habitacion No. %d con urgencia\n", (*argp).objPaciente.numeroHabitacion);
+	}
 	imprimirUltimasAlertas(argp);
 	
 	return &result;
