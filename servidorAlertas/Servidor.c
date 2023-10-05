@@ -10,24 +10,11 @@
 #include <string.h>
 #include <stdio.h>
 
+int posAgregada = 0;
+
 void formatearVectorAlertas(notificacion *notificacion){
 	for(int i=0; i<5; i++){
 		(*notificacion).vecUltimasAlertas[i].puntuacion = -1;
-	}
-}
-
-void guardarAlertaEnVector(alerta * alerta, notificacion	* notificacion){
-
-
-	for(int i=0; i<5; i++){
-		if((*notificacion).vecUltimasAlertas[i].puntuacion == -1){
-			(*alerta).puntuacion = (*notificacion).puntuacion;
-			strcpy((*alerta).fechaAlerta,(*notificacion).fechaAlerta);
-			strcpy((*alerta).horaAlerta,(*notificacion).horaAlerta);
-			//(*notificacion).vecUltimasAlertas[i] = (*alerta);
-			memcpy(&(*notificacion).vecUltimasAlertas[i], alerta, sizeof(alerta));
-			break;
-		}
 	}
 }
 
@@ -215,35 +202,39 @@ void cambiarTipoIndicadores(paciente_C_SA * paciente, indicadores_SA_SN *indicad
 }
 
 void escribirEnArchivo(notificacion * notificacion, FILE *archivo){
-	// Obtiene la posición actual del puntero de archivo
-  	long int posicionFinal = ftell(archivo);
+	fseek(archivo, 0, SEEK_SET);
+	fprintf(archivo, "%s %s %d %d\n", notificacion->fechaAlerta, notificacion->horaAlerta, notificacion->puntuacion, notificacion->objPaciente.numeroHabitacion);
+	//fprintf(archivo, "Nombre y apellido del paciente: %s %s\n", notificacion->objPaciente.nombre, notificacion->objPaciente.apellido);
+}
 
-	fprintf(archivo, "Fecha alerta: %s\n", notificacion->fechaAlerta);
-	fprintf(archivo, "Hora alerta: %s\n", notificacion->horaAlerta);
-	fprintf(archivo, "Cantidad de alertas: %d\n", notificacion->puntuacion);
+void leerArchivo(FILE * archivo, notificacion * objNotificacion){
+	alerta alerta;
+	char linea[200];
+	int numHabitacion, i;
+	// Abre el archivo
+	archivo = fopen("historialDeAlertas.txt", "r");
 
-	if(notificacion->objIndicadores.frecuencia_cardiaca != -1){
-		fprintf(archivo, "Frecuencia cardiaca: %d\n", notificacion->objIndicadores.frecuencia_cardiaca);
+	// Lee el archivo desde la última línea hasta la primera
+	while (fgets(linea, 200, archivo)) {
+		sscanf(linea, "%s %s %d %d", alerta.fechaAlerta, alerta.horaAlerta, &alerta.puntuacion, &numHabitacion);
+			
+		// Si la alerta es de la habitación que llega en la notificacion, la agrega al vector
+		if (numHabitacion == objNotificacion->objPaciente.numeroHabitacion) {
+			for (i = 0; i < 5; i++) {
+				if(posAgregada < 4){
+					objNotificacion->vecUltimasAlertas[posAgregada] = alerta;
+					posAgregada++;
+					break;
+				}
+				else{
+					objNotificacion->vecUltimasAlertas[posAgregada] = alerta;
+					posAgregada = 0;
+				}		
+			}
+		}	
 	}
-	if(notificacion->objIndicadores.tension_arterial[0] != -1 || notificacion->objIndicadores.tension_arterial[1] != -1){
-		fprintf(archivo, "Tension arterial diastolica: %d\n", notificacion->objIndicadores.tension_arterial[0]);
-		fprintf(archivo, "Tension arterial sistolica: %d\n", notificacion->objIndicadores.tension_arterial[1]);
-	}
-	if(notificacion->objIndicadores.frecuencia_respiratoria != -1){
-		fprintf(archivo, "Frecuencia respiratoria: %d\n", notificacion->objIndicadores.frecuencia_respiratoria);
-	}
-	if(notificacion->objIndicadores.temperatura != -1.00){
-		fprintf(archivo, "Temperatura: %.2f\n", notificacion->objIndicadores.temperatura);
-	}
-	if(notificacion->objIndicadores.saturacion_oxigeno != -1){
-		fprintf(archivo, "Satuacion oxigeno: %d\n", notificacion->objIndicadores.saturacion_oxigeno);
-	}
-	fprintf(archivo, "No habitacion: %d\n", notificacion->objPaciente.numeroHabitacion);
-	fprintf(archivo, "Nombre paciente: %s\n", notificacion->objPaciente.nombre);
-	fprintf(archivo, "Apellido paciente: %s\n", notificacion->objPaciente.apellido);
 
-	// Mueve el puntero de archivo a la posición anterior
-  	fseek(archivo, 9, SEEK_SET);
+	fclose(archivo);
 }
 
 bool_t *
@@ -289,32 +280,27 @@ enviardatospacientes_2_svc(paciente_C_SA *argp, struct svc_req *rqstp)
 	strcpy(objNotificacion.horaAlerta,generarHoraAlerta(fecha_hora));
 
 	//Guarda la información de la alerta del paciente en un txt	
-	archivo = fopen("historialDeAlertas.txt","w");
-
-	// Escribe la notificacion en el archivo
-	escribirEnArchivo(&objNotificacion, archivo);
-
-	// Cierra el archivo
-	fclose(archivo);
+	archivo = fopen("historialDeAlertas.txt","a");
 
 	//Verificación de la cantidad de puntuaciones para los sensores
 	if(objNotificacion.puntuacion >= 2){
 		printf("Alerta detectada!\n");
-		strcpy(objAlerta.fechaAlerta,objNotificacion.fechaAlerta);
-		strcpy(objAlerta.horaAlerta,objNotificacion.horaAlerta);
-		objAlerta.puntuacion = objNotificacion.puntuacion;
-		guardarAlertaEnVector(&objAlerta,&objNotificacion);
-
 		printf("Enviando notificacion...\n");
+
+		// Escribe la notificacion en el archivo
+		escribirEnArchivo(&objNotificacion, archivo);
 		
+		leerArchivo(archivo, &objNotificacion);
+
 		//Si la puntuacion es mayor a 2 se enviará una notificación
 		result_1 = enviarnotificacion_2(&objNotificacion, clnt);
 		if (result_1 == (bool_t *) NULL) {
 			clnt_perror (clnt, "call failed");
 		}
 	}
-	
-	
+
+	// Cierra el archivo
+	fclose(archivo);
 	
 #ifndef	DEBUG
 	clnt_destroy (clnt);

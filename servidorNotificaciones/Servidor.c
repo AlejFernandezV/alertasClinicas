@@ -38,10 +38,10 @@ void imprimirIndicadoresAlerta(notificacion * notificacion){
 }
 
 void imprimirUltimasAlertas(notificacion * notificacion) {
-	printf("\n[ Fecha alerta ] \t[ Hora alerta ] \t[ Puntuacion ]");
+	printf("\n[  Fecha alerta  ] \t[ Hora alerta ] \t[ Puntuacion ]\n");
 	for(int i=0; i<5; i++){
 		if(notificacion->vecUltimasAlertas[i].puntuacion != -1){
-			printf("[ %s ] \t[ %s ] \t[ %d ]\n", notificacion->vecUltimasAlertas[i].fechaAlerta, notificacion->vecUltimasAlertas[i].horaAlerta, notificacion->vecUltimasAlertas[i].puntuacion);
+			printf("[   %s   ] \t[    %s    ]   \t[     %d      ]\n", notificacion->vecUltimasAlertas[i].fechaAlerta, notificacion->vecUltimasAlertas[i].horaAlerta, notificacion->vecUltimasAlertas[i].puntuacion);
 		}
 	}
 	printf("\n");
